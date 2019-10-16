@@ -15,3 +15,10 @@ do
     results_files="$(basename $file .bam).cov"
     genomeCoverageBed -ibam $file > ./new_genomeCov/$results_files
 done
+
+
+#genomeCoverageBed -ibam ./align_55_TTKSF_to_ug99_sort.bam > race55_to_ug99.cov
+#genomeCoverageBed -ibam ./align_59_TTKSF_to_ug99_sort.bam > race59_to_ug99.cov
+
+genomeCoverageBed -ibam ./align_60_to_ug99_sort.bam > race60_to_ug99.cov 
+genomeCoverageBed -ibam ./align_61_to_ug99_sort.bam > race61_to_ug99.cov
