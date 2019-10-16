@@ -1,0 +1,34 @@
+### scripts to run busco analyses both in an individual assembly and a loop to run busco on several assemblies
+
+#############busco.pbs#############
+#!/bin/bash -l
+
+#PBS -l nodes=1:ppn=16,walltime=06:00:00
+#PBS -m abe
+#PBS -M lixx3627@umn.edu
+#PBS -N busco
+
+cd $PBS_O_WORKDIR
+module load busco/2.0.CentOS7
+export AUGUSTUS_CONFIG_PATH=/home/figueroa/shared/Analysis/ug99_Jan/busco/3.2.3.CentOS7/config/
+export PATH="/panfs/roc/msisoft/augustus/3.2.3.CentOS7/scripts:$PATH"
+
+# using basidiomycota_odb9 database as lineage option and Ustilago maydis as species option -sp, which was downloaded as instructed in BUSCO manual
+
+# run busco for several files:
+# use genome mode -m geno
+for F in $(ls ../data/*.fasta)
+do
+busco -i $F -o $(basename ${F} .fasta)_geno -l ./basidiomycota_odb9 -m geno -c 16 -sp ustilago_maydis
+done
+
+# run busco for individual sample:
+# run busco on ug99 final assembly after removing contaminants (514 contigs) and after arrow+2xpilon polish
+
+busco -i /home/figueroa/shared/Analysis/ug99_Jan/dgenies/ug99_PB_all_170m_arrow_2XPilon_decon.fa -o ug99_canu_170m_arrow2XPilon_decon -l ./basidiomycota_odb9 -m geno -c 16 -sp ustilago_maydis
+
+# run busco for annotation results
+# ug99 transcript
+busco -i ../../ug99_annotation/pgt210_annotation_afterHiC/210_fun_evidence/annotate_results/Puccinia_graminis_tritici_21-0.transcripts.fa -o pgt210_annotation_afterHiC_transcripts -l ./basidiomycota_odb9 -m tran -c 16 -sp ustilago_maydis
+# ug99 protein
+busco -i ../../ug99_annotation/pgt210_annotation_afterHiC/210_fun_evidence/annotate_results/Puccinia_graminis_tritici_21-0.proteins.fa -o pgt210_annotation_afterHiC_protein -l ./basidiomycota_odb9 -m prot -c 16 -sp ustilago_maydis
