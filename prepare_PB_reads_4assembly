@@ -1,0 +1,76 @@
+## Feng Li
+# Prepare PacBio reads for whole genome assembly
+# I have both reads from RSII (.bax.h5) and Sequel platforms (.bam)
+% less /home/figueroa/shared/Data/ug99/ug99_PB_raw/README
+
+This folder contains ug99 sequel and RSII subreads.bam files, and subreads.pbi files (RSII subreads.bam files were converted by smrtlink/5.1.0 bax2bam
+
+###################The script that was used to convert RSII files to bam file for subsequent analysis######################
+Run_bax2bam.pbs
+
+#!/bin/bash -l
+#PBS -l nodes=1:ppn=1,walltime=72:00:00,mem=16gb
+#PBS -m abe
+#PBS -M lixx3627@umn.edu
+
+cd $PBS_O_WORKDIR
+
+# Generate bam files from bax.h5 files for PB RSII data, use smrtlink 5.1.0
+module load umgc
+module load smrtlink/5.1.0
+bax2bam /home/figueroa/shared/Data/ug99/RSII_reads/unzipped_figueroa_4samples/projects/pacbio/active/data/primary/2017-09-15b_901/A07_1/Analysis_Results/*.bax.h5
+bax2bam /home/figueroa/shared/Data/ug99/RSII_reads/unzipped_figueroa_4samples/projects/pacbio/active/data/primary/2017-09-15b_901/A07_2/Analysis_Results/*.bax.h5
+bax2bam /home/figueroa/shared/Data/ug99/RSII_reads/unzipped_figueroa_4samples/projects/pacbio/active/data/primary/2017-09-15b_901/A07_3/Analysis_Results/*.bax.h5
+bax2bam /home/figueroa/shared/Data/ug99/RSII_reads/unzipped_figueroa_4samples/projects/pacbio/active/data/primary/2017-09-15b_901/A07_4/Analysis_Results/*.bax.h5
+
+######################################## Data Path ####################################################
+RSII data:
+/home/figueroa/shared/Data/ug99/RS_bax2bam/smrtlink5.1.0/m170916_000611_00122_c101224362550000001823295912071750_s1_p0.subreads.bam
+/home/figueroa/shared/Data/ug99/RS_bax2bam/smrtlink5.1.0/m170916_063639_00122_c101224362550000001823295912071751_s1_p0.subreads.bam
+/home/figueroa/shared/Data/ug99/RS_bax2bam/smrtlink5.1.0/m170916_130740_00122_c101224362550000001823295912071752_s1_p0.subreads.bam
+/home/figueroa/shared/Data/ug99/RS_bax2bam/smrtlink5.1.0/m170916_193952_00122_c101224362550000001823295912071753_s1_p0.subreads.bam
+# use /home/figueroa/shared/Data/ug99/RS_bax2bam/smrtlink5.1.0/*.subreads.bam
+
+Sequel data: 
+# Transfer zipped raw data files I downloaded from Castle's Globus endpoint to MSI S3 Tier Storage:
+Export-subreads-02_09_2018_11_09_01.zip --> subreads-02_09_2018_11_09_01_1st_Sequel_SMRT
+Export-subreads-02_28_2018__14_26_31.zip -->subreads-02_28_2018__14_26_31_2ndAND3rd_Sequel
+Export-subreads-03_07_2018__10_47_12.zip -->subreads-03_07_2018__10_47_12_4thAND5th_Sequel
+README_Ug99_rawData.md (END)
+
+/home/figueroa/shared/Data/ug99/subreads-02_09_2018_11_09_01_1st_Sequel_SMRT/6f532069-61c6-4929-b8a9-a68220942007/m54242_180201_222232.subreads.bam
+/home/figueroa/shared/Data/ug99/subreads-02_28_2018__14_26_31_2ndAND3rd_Sequel/8eac5840-707d-4ae2-aefa-ff768c9dad93/m54242_180222_201654.subreads.bam
+/home/figueroa/shared/Data/ug99/subreads-02_28_2018__14_26_31_2ndAND3rd_Sequel/b7b98a39-7298-486d-9065-d3f73ac4d883/m54242_180223_062004.subreads.bam
+/home/figueroa/shared/Data/ug99/subreads-03_07_2018__10_47_12_4thAND5th_Sequel/8ba81cfc-2fc4-4c15-8492-84a552084a32/m54242_180302_061102.subreads.bam
+/home/figueroa/shared/Data/ug99/subreads-03_07_2018__10_47_12_4thAND5th_Sequel/e6feb905-859f-44ac-a55d-58a7e85c9d40/m54242_180301_200624.subreads.bam
+# Then Generate .bai and .pbi files for all subreads.bam
+# Now all these bam files data are stored in /home/figueroa/shared/Data/ug99/ug99_PB_raw
+######################################## Data Path ####################################################
+
+############# transform raw reads bam files from Sequel output to fasta and fastq files#################################
+run_bam2fasta_q.pbs
+
+#!/bin/bash -l
+#PBS -l nodes=1:ppn=8,walltime=36:00:00
+#PBS -m abe
+#PBS -M lixx3627@umn.edu
+
+module load bamtools
+cd $PBS_O_WORKDIR
+
+# transform raw reads bam files from Sequel output to fasta and fastq files
+bamtools convert -format fasta -in /home/figueroa/shared/Data/ug99/subreads-02_28_2018__14_26_31_2ndAND3rd_Sequel/8eac5840-707d-4ae2-aefa-ff768c9dad93/m54242_180222_201654.subreads.bam -out ug99_2nd_Sequel_SMRT_subreads.fasta
+bamtools convert -format fastq -in /home/figueroa/shared/Data/ug99/subreads-02_28_2018__14_26_31_2ndAND3rd_Sequel/8eac5840-707d-4ae2-aefa-ff768c9dad93/m54242_180222_201654.subreads.bam -out ug99_2nd_Sequel_SMRT_subreads.fastq
+#########################################################################################################
+
+################ generate a fastq.gz file for all 5 Sequel SMRT cells and 4 RSII SMRT cells ########################
+#!/bin/bash -l
+#PBS -l nodes=1:ppn=1,walltime=12:00:00
+#PBS -m abe
+#PBS -M lixx3627@umn.edu
+
+cd $PBS_O_WORKDIR
+
+# combine Sequel 5 cells and RSII 4 SMRT cells
+cat /home/figueroa/shared/Data/ug99/RSII_reads/unzipped_figueroa_4samples/projects/pacbio/active/data/primary/2017-09-15b_901/A07_?/Analysis_Results/*.subreads.fastq /home/figueroa/shared/Data/ug99/subreads*/*/ug99*.fastq | gzip -9 > ./ug99_PB_5Sequel_4RSII.fastq.gz 
+#########################################################################################################
