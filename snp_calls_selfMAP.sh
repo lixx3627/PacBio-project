@@ -59,3 +59,12 @@ for input in $(ls -1 ./*.filtered.vcf)
 do
     results_file="$(basename $input).homoSNPs.stats.txt"
     cat $input | vcffilter -f "AC > 0 & AC = 2"|  vcfstats -l >$results_file
+    
+    
+ # only filter snps in the variant calling file:
+ #../freebayes-parallel Ug99V2AP2_537ctg.fa.regions 24 -f ../../../data/reference_genome/after_BP/Ug99V2AP2_537ctg.fa ../../../data/FilesforFeng_03012019/bam/210karyonA_ExtractedReads_mappingToUg99_537ctgRef.bam | vcffilter -f "QUAL > 20 & QUAL / AO > 10 & SAF > 0 & SAR > 0 & RPR > 1 & RPL > 1" > 210karyonA_ExtractedReads_mappingToUg99_537ctgRef.filtered.vcf
+../freebayes-parallel Ug99V2AP2_537ctg.fa.regions 24 -f ../../../data/reference_genome/after_BP/Ug99V2AP2_537ctg.fa ../../../data/FilesforFeng_03012019/bam/210karyonA_ExtractedReads_mappingToUg99_537ctgRef.bam | vcffilter -f "QUAL > 20 & QUAL / AO > 10 & SAF > 0 & SAR > 0 & RPR > 1 & RPL > 1" > 210karyonA_ExtractedReads_mappingToUg99_537ctgRef.filtered.vcf
+
+cat ../210karyonA_ExtractedReads_mappingToUg99_537ctgRef.filtered.vcf |vcffilter -f "TYPE = snp"| vcffilter -f "AC > 0 & AC = 1"|  vcfstats -l > 210karyonA_ExtractedReads_mappingToUg99_537ctgRef.filtered.vcf.hetSNPs.stats.txt
+cat ../210karyonA_ExtractedReads_mappingToUg99_537ctgRef.filtered.vcf | vcffilter -f "TYPE = snp"| vcffilter -f "AC > 0 & AC = 2"|  vcfstats -l > 210karyonA_ExtractedReads_mappingToUg99_537ctgRef.filtered.vcf.homoSNPs.stats.txt
+cat ../210karyonA_ExtractedReads_mappingToUg99_537ctgRef.filtered.vcf | vcffilter -f "TYPE = snp"|vcffilter -f "AC > 0 "|  vcfstats -l > 210karyonA_ExtractedReads_mappingToUg99_537ctgRef.filtered.vcf.SNPs.stats.txt
